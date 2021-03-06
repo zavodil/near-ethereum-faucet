@@ -110,8 +110,7 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 						}
 					}
 
-
-					window.localStorage.setItem(`claim_${user.id}`, key.secretKey);
+					window.localStorage.setItem(`claim_${user.id}`, key.secretKey.replace("ed25519:", ""));
 				})
 				.catch((err) => {
 					console.log(err)
@@ -180,11 +179,11 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 
 	function GetSuccessMessageClaimedNow(key: string) {
 		return `Successfully claimed! Please process here: <br />
-						<a href="${nearConfig.ClaimUrl}/${key}">https://redpacket.near.org/${key}</a>`;
+						<a href="${nearConfig.ClaimUrl}${key}">${nearConfig.ClaimUrl}${key}</a>`;
 	}
 
 	function GetSuccessMessageClaimedBefore(key: string) {
 		return `Already claimed! Please process here: <br />
-						<a href="${nearConfig.ClaimUrl}/${key}">https://redpacket.near.org/${key}</a>`;
+						<a href="${nearConfig.ClaimUrl}${key}">${nearConfig.ClaimUrl}${key}</a>`;
 	}
 };
