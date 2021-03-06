@@ -22,7 +22,7 @@ cd ../.. # Go back to root folder
 yarn start # Will launch the frontend and the backend at the same time
 ```
 
-The backend should be running on `localhost:8000`, and the frontend on `localhost:3456`.
+The backend should be running on `localhost:3456`, and the frontend on `localhost:3000`.
 
 ####
 
