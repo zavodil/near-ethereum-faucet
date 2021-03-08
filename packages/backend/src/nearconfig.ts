@@ -5,6 +5,6 @@ export const nearConfig = {
 	KeyStore: "/root/.near-credentials/",
 	MinAmount: 50000000000000000,
 	NearTokensToAttach: "1010000000000000000000000",
-	LinkDropContract: "linkdrop.zavodil.testnet",
+	LinkDropContract: "testnet",
 	InfuraKey: "a6ff46ea815a44b4858aa3664e7f226e"
 };

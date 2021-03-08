@@ -4,7 +4,7 @@ import { INTEGER, Sequelize, STRING } from 'sequelize';
 
 import { User } from './models';
 
-const sequelize = new Sequelize('login-with-metamask-database3', '', undefined, {
+const sequelize = new Sequelize('near-faucet', '', undefined, {
 	dialect: 'sqlite',
 	storage: path.join(os.tmpdir(), 'db.sqlite'),
 	logging: false,
