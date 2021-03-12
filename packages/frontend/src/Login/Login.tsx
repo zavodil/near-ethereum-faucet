@@ -132,9 +132,9 @@ export const Login = ({onLoggedIn}: Props): JSX.Element => {
 
     return (
         <div>
-			<h1>Claim NEAR account for free!</h1>
+			<h1>Claim your NEAR account</h1>
             <p>
-                Please login with Metamask having at least {nearConfig.MinAmountEthText} on your account.
+				You must have > {nearConfig.MinAmountEthText} to claim a free account
                 <br/>
             </p>
             <button className="Login-button Login-mm" onClick={handleClick}>
