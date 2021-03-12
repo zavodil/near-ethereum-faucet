@@ -57,16 +57,9 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 			.then((response) => response.json())
 			.then((user) => {
 				console.log(user);
-				if (!user.claimed) {
+				if (user && !user.claimed) {
 					console.log("claiming...");
 					try {
-						if (!user) {
-							window.alert(
-								'The user id has not been fetched yet. Please try again in 5 seconds.'
-							);
-							return;
-						}
-
 						const keypair: nearApi.utils.KeyPair = nearApi.utils.KeyPair.fromRandom('ed25519');
 						const key = {
 							publicKey: keypair.getPublicKey().toString(),
@@ -83,10 +76,6 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 						})
 							.then((response) => response.json())
 							.then((response) => {
-								//setState({...state, loading: false, user});
-
-
-
 								if (response && response.status) {
 									console.log("Claimed");
 									console.log(key.secretKey)
@@ -107,7 +96,6 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 										user: response.user
 									});
 								}
-
 
 								window.localStorage.setItem(`claim_${user.id}`, key.secretKey.replace("ed25519:", ""));
 							})
