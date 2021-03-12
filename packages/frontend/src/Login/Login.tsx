@@ -91,11 +91,11 @@ export const Login = ({onLoggedIn}: Props): JSX.Element => {
         const is_mainnet = await web3.eth.net.getId().then(netId => {
             return (netId === 1)
         });
+
         if (!is_mainnet) {
             alert("Only Mainnet Wallets available");
             return false;
         }
-
 
         const publicAddress = coinbase.toLowerCase();
 
