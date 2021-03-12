@@ -77,8 +77,6 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 							.then((response) => response.json())
 							.then((response) => {
 								if (response && response.status) {
-									console.log("Claimed");
-									console.log(key.secretKey)
 									setState({
 										...state,
 										claimed: 1,
