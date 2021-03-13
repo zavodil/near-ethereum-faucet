@@ -2,11 +2,11 @@ import './Profile.css';
 
 import jwtDecode from 'jwt-decode';
 import React, {useState, useEffect} from 'react';
-import Blockies from 'react-blockies';
 import * as nearApi from 'near-api-js'
 import {nearConfig} from "../nearconfig";
 
 import {Auth} from '../types';
+import logo from "../App/logo.svg";
 
 interface Props {
 	auth: Auth;
@@ -21,8 +21,8 @@ interface State {
 		claimed: number;
 	};
 	username: string;
-	claimed: number;
 	claim_result: string;
+	claim_result_key: string;
 }
 
 interface JwtDecoded {
@@ -37,8 +37,8 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 		loading: true,
 		user: undefined,
 		username: '',
-		claimed: 0,
 		claim_result: '',
+		claim_result_key: '',
 	});
 
 	useEffect(() => {
@@ -56,7 +56,6 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 		})
 			.then((response) => response.json())
 			.then((user) => {
-				console.log(user);
 				if (user && !user.claimed) {
 					console.log("claiming...");
 					try {
@@ -65,6 +64,7 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 							publicKey: keypair.getPublicKey().toString(),
 							secretKey: keypair.toString()
 						};
+						const claim_result_key = key.secretKey.replace("ed25519:", "");
 
 						fetch(`${process.env.REACT_APP_BACKEND_URL}/claim/${user.id}/${key.publicKey}`, {
 							body: "",
@@ -77,12 +77,14 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 							.then((response) => response.json())
 							.then((response) => {
 								if (response && response.status) {
+									const new_user = response.user;
+									new_user.claimed = 1;
 									setState({
 										...state,
-										claimed: 1,
 										loading: false,
-										user: response.user,
-										claim_result: GetSuccessMessageClaimedNow(key.secretKey.replace("ed25519:", ""))
+										user: new_user,
+										claim_result: GetSuccessMessageClaimedNow(),
+										claim_result_key: claim_result_key
 									});
 								} else {
 									if (response.status)
@@ -94,8 +96,7 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 										user: response.user
 									});
 								}
-
-								window.localStorage.setItem(`claim_${user.id}`, key.secretKey.replace("ed25519:", ""));
+								window.localStorage.setItem(`claim_${user.id}`, claim_result_key);
 							})
 							.catch((err) => {
 								console.log(err)
@@ -107,9 +108,13 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 					} catch (e) {
 						console.log(e)
 					}
-				}
-				else{
-					setState({...state, loading: false, user});
+				} else {
+					setState({
+						...state,
+						loading: false,
+						user,
+						claim_result: GetSuccessMessageClaimedBefore()
+					});
 				}
 
 			})
@@ -117,10 +122,13 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 	}, []);
 
 	const ClaimResult = () => {
-		const {claim_result} = state;
+		const {claim_result, claim_result_key} = state;
+
 		return claim_result
-			? <div className="claim-result"
-				   dangerouslySetInnerHTML={{__html: claim_result}}/>
+			? <div className="claim-result">
+				{claim_result}
+				<GetClaimButton/>
+			</div>
 			: null;
 	};
 
@@ -139,41 +147,73 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 		if (keyOfPreviousClaim && !claim_result) {
 			setState({
 				...state,
-				claim_result: GetSuccessMessageClaimedBefore(keyOfPreviousClaim)
+				claim_result: GetSuccessMessageClaimedBefore()
 			});
 		}
 	}
 
 	return (
-		<div className="Profile">
-			<p>
-				Logged in as <Blockies seed={publicAddress}/>
-			</p>
-			<div>
-				Your publicAddress is <code>{publicAddress}</code>
-			</div>
-			<div>
-				<div className="claim-container">
-					{loading ? "Claiming..." : ""}
+		<div className="App landing">
+			<nav data-behavior="topbar" className="topbar profile-header">
+				<div className="logo"
+					 onClick={() => window.location.href = "http://bridge.near.org/"}/>
+				<div className="rainbow-bridge"
+					 onClick={() => window.location.href = "http://bridge.near.org/"}>
+					NEAR Rainbow Bridge
+				</div>
+				<div className="logout">
+					<button onClick={onLoggedOut}>Logout</button>
+				</div>
+			</nav>
+
+			<header className="App-header">
+				<h1 className="App-title">
+					NEAR Faucet for Ethereum Holders
+				</h1>
+			</header>
+			<div className="App-intro">
+				<div className="Profile">
+					<div>
+						<div className="claim-container">
+							{loading ? "Claiming..." : ""}
+						</div>
+					</div>
+
+					<ClaimResult/>
+
+					<div className="account-info">
+						Your Ethereum Address: <code>{publicAddress}</code>
+					</div>
 				</div>
 			</div>
-
-			<ClaimResult/>
-
-			<p>
-				<button onClick={onLoggedOut}>Logout</button>
-			</p>
 		</div>
 	);
 
+	function GetClaimButton() {
+		let {claim_result_key} = state;
 
-	function GetSuccessMessageClaimedNow(key: string) {
-		return `Successfully claimed! Please process here: <br />
-						<a href="${nearConfig.ClaimUrl}${key}">${nearConfig.ClaimUrl}${key}</a>`;
+		if (!claim_result_key)
+			claim_result_key = window.localStorage.getItem(`claim_${userId}`) || "";
+
+		return claim_result_key
+			? <button
+				className="action-button cta"
+				type="button"
+				onClick={(e) => {
+					e.preventDefault();
+					window.location.href = `${nearConfig.ClaimUrl}${claim_result_key.replace("ed25519:", "")}`;
+				}}
+			>Claim NEAR account</button>
+			: <div className="key-bot-found">
+				Key wasn&apos;t found in the localstorage.
+			</div>;
 	}
 
-	function GetSuccessMessageClaimedBefore(key: string) {
-		return `Already claimed! Please process here: <br />
-						<a href="${nearConfig.ClaimUrl}${key}">${nearConfig.ClaimUrl}${key}</a>`;
+	function GetSuccessMessageClaimedNow() {
+		return `Successfully claimed! Please process:`;
+	}
+
+	function GetSuccessMessageClaimedBefore() {
+		return `Already claimed! Please process:`;
 	}
 };

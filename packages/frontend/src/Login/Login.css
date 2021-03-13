@@ -1,13 +1,13 @@
-.Login-button {
+.action-button {
   color: white;
   display: block;
-  font-size: 16px;
-  height: 60px;
+  font-size: 1.3em;
+  height: 2em;
   margin: 10px auto;
   width: 300px;
 }
 
-.Login-button:hover {
+.action-button:hover {
   opacity: 0.9;
 }
 

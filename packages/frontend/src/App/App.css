@@ -1,40 +1,166 @@
+:root {
+	--bg: #000;
+	--fg: #FFF;
+	--semi: #3a3a3a;
+}
+body {
+	background-color: var(--bg);
+	color: var(--fg);
+}
+
+@media (min-width: 928px) {
+	.landing {
+		padding-left: 5em;
+	}
+
+	.landing:before {
+		position: fixed;
+		top: 0;
+		bottom: 0;
+		right: 0;
+		left: 0;
+		content: " ";
+		background: url("./../assets/form-bg-bottom-left.3dc9331c.svg") no-repeat, url("./../assets/form-bg-bottom-right.b36f203d.svg") no-repeat;
+		background-position: 0 100%, 100% 100%;
+		z-index: -1;
+	}
+}
+
+.landing {
+	margin: 0;
+	padding: 1em 1em .5em;
+	position: relative;
+}
+
+.login p {
+	color: #79726c;
+	margin: 0 0 1em;
+	font-size: large;
+}
+
 .App {
-  text-align: center;
+	text-align: center;
 }
 
 .App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 80px;
+	animation: App-logo-spin infinite 20s linear;
+	height: 80px;
+}
+
+.topbar .logo, .topbar .rainbow-bridge{
+	cursor: pointer;
 }
 
 .App-header {
-  background-color: #222;
-  height: 150px;
-  padding: 20px;
-  color: white;
-}
-
-.App-title {
-  font-size: 1.5em;
+	height: 150px;
+	padding: 20px;
+	font-weight: 900;
+	line-height: 1;
+	margin-top: 2.5em;
+	color: var(--fg);
 }
 
 .App-intro {
-  margin-top: 30px;
-  font-size: large;
+	font-size: large;
+	padding: 0 1em;
+	margin: 30px auto 0 auto;
+	max-width: 20em;
+	text-align: center;
+
+}
+
+.App-intro h1 {
+	font-weight: 900 !important;
+}
+
+button.cta {
+	border-radius: .5em;
+	margin-top: 1.5em;
+	width: 100%;
+	font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+	background-color: var(--fg);
+	color: var(--bg);
+}
+
+.key-bot-found{
+	border-radius: .5em;
+	margin: .75em;
+	padding: .25em;
+	width: 100%;
+	font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+	background-color: pink;
+	cursor: not-allowed;
+}
+
+button:active {
+	box-shadow: inset 0 0 10em rgb(0 0 0 / 10%);
+}
+
+.account-info {
+	color: #79726c;
+	padding-top: 3em;
+}
+
+.profile-header {
+	padding-left: 5em;
+	border-bottom: 1px solid var(--semi);
+	height: 2em;
+}
+
+.profile-header .logo {
+	background: url("./../assets/rainbow-bridge.e14f3fa2.svg") no-repeat;
+	width: 2.4em;
+	height: 2.4em
+}
+
+.profile-header .logo, .profile-header .rainbow-bridge {
+	float: left;
+}
+
+.profile-header .rainbow-bridge {
+	padding-left: 0.5em;
+}
+
+.profile-header .logout {
+	text-align: right;
+	float: right;
+}
+
+.profile-header div {
+	display: inline-block;
+}
+
+.logout button {
+	background-color: #6e6e6e;
+}
+
+button:focus, button:hover {
+	box-shadow: inset 0 0 10em hsl(0deg 0% 100% / 20%);
+}
+
+button {
+	background-color: #000;
+	border-radius: .5em;
+	border: none;
+	color: #FFF;
+	font-weight: 500;
+	cursor: pointer;
+	padding: .3em .75em;
+	transition: transform 30ms;
+	outline: none;
 }
 
 @keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
 }
 
 code {
 	color: dimgray;
-	background-color: #dceaf1;
 	padding: 0 3px;
 }
 
@@ -46,6 +172,6 @@ code {
 	font-style: normal
 }
 
-.claim-container, .claim-result{
+.claim-container, .claim-result {
 	padding-top: 20px;
 }
