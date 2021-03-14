@@ -203,17 +203,17 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 					e.preventDefault();
 					window.location.href = `${nearConfig.ClaimUrl}${claim_result_key.replace("ed25519:", "")}`;
 				}}
-			>Claim NEAR account</button>
+			>Create Account</button>
 			: <div className="key-bot-found">
 				Key wasn&apos;t found in the localstorage.
 			</div>;
 	}
 
 	function GetSuccessMessageClaimedNow() {
-		return `Successfully claimed! Please process:`;
+		return `Next, create an account in the NEAR Wallet:`;
 	}
 
 	function GetSuccessMessageClaimedBefore() {
-		return `Already claimed! Please process:`;
+		return `Already claimed! Continue below:`;
 	}
 };
