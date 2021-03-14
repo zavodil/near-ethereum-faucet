@@ -82,14 +82,15 @@ button.cta {
 	color: var(--bg);
 }
 
-.key-bot-found{
+.key-not-found{
 	border-radius: .5em;
-	margin: .75em;
-	padding: .25em;
+	margin-top: .75em;
+	padding: .5em;
 	width: 100%;
 	font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
 	background-color: pink;
 	cursor: not-allowed;
+	color: #000;
 }
 
 button:active {

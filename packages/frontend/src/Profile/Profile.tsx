@@ -204,8 +204,8 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 					window.location.href = `${nearConfig.ClaimUrl}${claim_result_key.replace("ed25519:", "")}`;
 				}}
 			>Create Account</button>
-			: <div className="key-bot-found">
-				Key wasn&apos;t found in the localstorage.
+			: <div className="key-not-found">
+				Key not found in the localstorage. <br />Did you claim it in the different browser?
 			</div>;
 	}
 
