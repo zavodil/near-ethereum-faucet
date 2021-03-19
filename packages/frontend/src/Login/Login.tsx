@@ -133,11 +133,10 @@ export const Login = ({onLoggedIn}: Props): JSX.Element => {
 
 	return (
 		<div className="App landing">
-			<nav data-behavior="topbar" className="topbar profile-header">
-				<div className="logo"
-					 onClick={() => window.location.href = "http://bridge.near.org/"}/>
-				<div className="rainbow-bridge"
-					 onClick={() => window.location.href = "http://bridge.near.org/"}>
+			<nav data-behavior="topbar" className="topbar profile-header"
+				 onClick={() => window.location.href = nearConfig.BridgeUrl}>
+				<div className="logo"/>
+				<div className="rainbow-bridge">
 					NEAR Rainbow Bridge
 				</div>
 			</nav>
@@ -149,11 +148,10 @@ export const Login = ({onLoggedIn}: Props): JSX.Element => {
 			</header>
 			<div className="App-intro">
 				<div className="login">
-					<h1>Claim your NEAR account</h1>
+					<h1>Claim your <br/> NEAR account</h1>
 					<p>
-						You must have &gt; {nearConfig.MinAmountEthText}<br/> to
-						claim a free account.
-						<br/>
+						Create <strong>free</strong> NEAR account by showing
+						that you have at least {nearConfig.MinAmountEthText}.
 					</p>
 					<button className="action-button cta" onClick={handleClick}>
 						{loading ? 'Loading...' : 'Login with MetaMask'}

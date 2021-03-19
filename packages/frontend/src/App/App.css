@@ -2,6 +2,7 @@
 	--bg: #000;
 	--fg: #FFF;
 	--semi: #3a3a3a;
+	--secondary-text: #cecece
 }
 body {
 	background-color: var(--bg);
@@ -33,7 +34,7 @@ body {
 }
 
 .login p {
-	color: #79726c;
+	color: var(--secondary-text);
 	margin: 0 0 1em;
 	font-size: large;
 }
@@ -98,7 +99,7 @@ button:active {
 }
 
 .account-info {
-	color: #79726c;
+	color: var(--secondary-text);
 	padding-top: 3em;
 }
 

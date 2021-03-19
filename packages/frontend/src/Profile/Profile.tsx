@@ -154,11 +154,10 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 
 	return (
 		<div className="App landing">
-			<nav data-behavior="topbar" className="topbar profile-header">
-				<div className="logo"
-					 onClick={() => window.location.href = "http://bridge.near.org/"}/>
-				<div className="rainbow-bridge"
-					 onClick={() => window.location.href = "http://bridge.near.org/"}>
+			<nav data-behavior="topbar" className="topbar profile-header"
+				 onClick={() => window.location.href = nearConfig.BridgeUrl}>
+				<div className="logo"/>
+				<div className="rainbow-bridge">
 					NEAR Rainbow Bridge
 				</div>
 				<div className="logout">
@@ -205,7 +204,8 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 				}}
 			>Create Account</button>
 			: <div className="key-not-found">
-				Key not found in the localstorage. <br />Did you claim it in the different browser?
+				Key not found in the localstorage. <br/>Did you claim it in the
+				different browser?
 			</div>;
 	}
 
