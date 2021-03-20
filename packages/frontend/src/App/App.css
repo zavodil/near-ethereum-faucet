@@ -48,7 +48,7 @@ body {
 	height: 80px;
 }
 
-.topbar .logo, .topbar .rainbow-bridge{
+.topbar .logo, .topbar .rainbow-bridge, .profile-nav{
 	cursor: pointer;
 }
 
@@ -115,7 +115,7 @@ button:active {
 	height: 2.4em
 }
 
-.profile-header .logo, .profile-header .rainbow-bridge {
+.profile-header .logo, .profile-header .rainbow-bridge, .profile-nav {
 	float: left;
 }
 

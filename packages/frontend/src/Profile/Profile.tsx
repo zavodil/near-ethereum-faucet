@@ -6,7 +6,6 @@ import * as nearApi from 'near-api-js'
 import {nearConfig} from "../nearconfig";
 
 import {Auth} from '../types';
-import logo from "../App/logo.svg";
 
 interface Props {
 	auth: Auth;
@@ -154,11 +153,13 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 
 	return (
 		<div className="App landing">
-			<nav data-behavior="topbar" className="topbar profile-header"
-				 onClick={() => window.location.href = nearConfig.BridgeUrl}>
-				<div className="logo"/>
-				<div className="rainbow-bridge">
-					NEAR Rainbow Bridge
+			<nav data-behavior="topbar" className="topbar profile-header">
+				<div className="profile-nav"
+					onClick={() => window.location.href = nearConfig.BridgeUrl}>
+					<div className="logo"/>
+					<div className="rainbow-bridge">
+						NEAR Rainbow Bridge
+					</div>
 				</div>
 				<div className="logout">
 					<button onClick={onLoggedOut}>Logout</button>

@@ -5,7 +5,6 @@ import Web3 from 'web3';
 import {nearConfig} from "../nearconfig";
 
 import {Auth} from '../types';
-import logo from "../App/logo.svg";
 
 interface Props {
 	onLoggedIn: (auth: Auth) => void;
