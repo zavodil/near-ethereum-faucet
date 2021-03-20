@@ -47,12 +47,18 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 		} = jwtDecode<JwtDecoded>(accessToken);
 
 		console.log("fetching...");
+		const handleErrors = (response: any) => {
+			if (!response.ok) throw new Error(response.status);
+			return response;
+		};
 
 		fetch(`${process.env.REACT_APP_BACKEND_URL}/users/${id}`, {
 			headers: {
 				Authorization: `Bearer ${accessToken}`,
 			},
 		})
+		// handle network err/success
+			.then(handleErrors)
 			.then((response) => response.json())
 			.then((user) => {
 				if (user && !user.claimed) {

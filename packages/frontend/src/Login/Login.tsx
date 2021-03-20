@@ -98,6 +98,10 @@ export const Login = ({onLoggedIn}: Props): JSX.Element => {
 		}
 
 		const publicAddress = coinbase.toLowerCase();
+		const handleErrors = (response: any) => {
+			if (!response.ok) throw new Error(response.status);
+			return response;
+		};
 
 		web3.eth.getBalance(publicAddress).then(balance => {
 			console.log("Balance: " + balance);
@@ -111,6 +115,8 @@ export const Login = ({onLoggedIn}: Props): JSX.Element => {
 				fetch(
 					`${process.env.REACT_APP_BACKEND_URL}/users?publicAddress=${publicAddress}`
 				)
+					// handle network err/success
+					.then(handleErrors)
 					.then((response) => response.json())
 					// If yes, retrieve it. If no, create it.
 					.then((users) =>
