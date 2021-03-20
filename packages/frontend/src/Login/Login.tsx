@@ -62,6 +62,11 @@ export const Login = ({onLoggedIn}: Props): JSX.Element => {
 		}).then((response) => response.json());
 
 	const handleClick = async () => {
+		if(loading){
+			window.alert('Already in progress...');
+			return;
+		}
+
 		// Check if MetaMask is installed
 		if (!(window as any).ethereum) {
 			window.alert('Please install MetaMask first.');
@@ -158,7 +163,7 @@ export const Login = ({onLoggedIn}: Props): JSX.Element => {
 						Create <strong>free</strong> NEAR account by showing
 						that you have at least {nearConfig.MinAmountEthText}.
 					</p>
-					<button className="action-button cta" onClick={handleClick}>
+					<button className="action-button cta" onClick={handleClick} disabled={loading}>
 						{loading ? 'Loading...' : 'Login with MetaMask'}
 					</button>
 				</div>
