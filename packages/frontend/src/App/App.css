@@ -103,6 +103,10 @@ button:active {
 	padding-top: 3em;
 }
 
+.account-info div{
+	font-size: 0.95em;
+}
+
 .profile-header {
 	padding-left: 5em;
 	border-bottom: 1px solid var(--semi);
@@ -140,6 +144,10 @@ button:focus, button:hover {
 	box-shadow: inset 0 0 10em hsl(0deg 0% 100% / 20%);
 }
 
+.ref-link{
+	padding-top: 30px;
+}
+
 button {
 	background-color: #000;
 	border-radius: .5em;
@@ -164,6 +172,7 @@ button {
 code {
 	color: dimgray;
 	padding: 0 3px;
+	font-size: 0.9em;
 }
 
 @font-face {

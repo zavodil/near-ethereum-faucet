@@ -24,11 +24,27 @@ User.init(
 			unique: true,
 			validate: { isLowercase: true },
 		},
-		username: {
+		nearPublicKey: {
 			type: STRING,
 			unique: false,
+			defaultValue: "",
 		},
 		claimed: {
+			type: INTEGER,
+			unique: false,
+			defaultValue: 0
+		},
+		refUserId: {
+			type: INTEGER,
+			unique: false,
+			defaultValue: 0
+		},
+		totalAffiliates: {
+			type: INTEGER,
+			unique: false,
+			defaultValue: 0
+		},
+		claimedAffiliates: {
 			type: INTEGER,
 			unique: false,
 			defaultValue: 0

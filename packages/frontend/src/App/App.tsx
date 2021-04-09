@@ -1,11 +1,9 @@
 import './App.css';
-
 import React, {useEffect, useState} from 'react';
 
 import {Login} from '../Login';
 import {Profile} from '../Profile/Profile';
 import {Auth} from '../types';
-import logo from './logo.svg';
 
 const LS_KEY = 'login-with-metamask:auth';
 
@@ -13,10 +11,30 @@ interface State {
 	auth?: Auth;
 }
 
+function getPreviousClaimCount() {
+	console.log(`getPreviousClaimCount ${Object.keys(window.localStorage)
+		.filter((key) => key.startsWith("claim_")).length}`);
+
+	return Object.keys(window.localStorage)
+		.filter((key) => key.startsWith("claim_")).length
+}
+
 export const App = (): JSX.Element => {
 	const [state, setState] = useState<State>({});
 
 	useEffect(() => {
+		const urlParams = new URLSearchParams(window.location.search);
+		const invite = urlParams.get('invite')
+		if (invite) {
+			if (getPreviousClaimCount() < 1)
+				window.localStorage.setItem(`invite`, invite);
+			else
+				window.localStorage.removeItem(`invite`);
+
+			window.location.href = window.location.origin + window.location.pathname;
+			return;
+		}
+
 		// Access token is stored in localstorage
 		const ls = window.localStorage.getItem(LS_KEY);
 		const auth = ls && JSON.parse(ls);
