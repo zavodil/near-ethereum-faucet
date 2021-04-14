@@ -28,7 +28,11 @@ export const getRefInfo = async (req: Request, res: Response) => {
 		});
 };
 
-export const getRefLink = async (req: Request, res: Response) => {
+function ConvertToYoctoNear(amount: number) {
+	return new BN(Math.round(amount * 100000000)).mul(new BN("10000000000000000")).toString();
+}
+
+export const claimAffiliateReward = async (req: Request, res: Response) => {
 	if ((req as any).user.payload.id !== +req.params.userId) {
 		return res
 			.status(401)
@@ -40,18 +44,81 @@ export const getRefLink = async (req: Request, res: Response) => {
 				res.json(null);
 
 			else if (user) {
-				await getUserByPublicKey(user.nearPublicKey)
-					.then(account_id => res.json(account_id))
+				await getNearAccountByPublicKey(user.nearPublicKey)
+					.then(async (account_id) => {
+						if (account_id) {
+							const totalAffiliates = user?.totalAffiliates || 0;
+							const claimedAffiliates = user?.claimedAffiliates || 0;
+							const amount = (totalAffiliates - claimedAffiliates) * nearConfig.AffiliateRewardNear;
+							if (amount > 0) {
+								const account = await GetNearMasterAccount();
+
+								const transferTx = await account.sendMoney(
+									account_id,
+									ConvertToYoctoNear(amount));
+
+								if (!transferTx.status.hasOwnProperty("SuccessValue")) {
+									return res.json({
+										status: false,
+										text: "Because of some reason transaction was not applied as expected"
+									});
+								} else {
+									user.claimedAffiliates = totalAffiliates;
+									user.save();
+
+									return res.json({
+										status: true,
+										text: "Rewards successfully claimed!",
+										tx: transferTx.transaction.hash,
+										user: user
+									});
+
+								}
+							} else {
+								return res.json({
+									status: false,
+									text: "Nothing to withdraw"
+								});
+							}
+						} else {
+							return res.json({
+								status: false,
+								text: "Unknown NEAR account"
+							});
+						}
+					})
 			}
 		});
 };
 
-async function getUserByPublicKey(key: string | undefined): Promise<string> {
-	if(!key)
-		return  "";
+export const getRefLinkAvailability = async (req: Request, res: Response) => {
+	if ((req as any).user.payload.id !== +req.params.userId) {
+		return res
+			.status(401)
+			.send({error: 'You can can only access yourself'});
+	}
+	User.findByPk(req.params.userId)
+		.then(async (user: User | null) => {
+			if (user && !user.nearPublicKey)
+				res.json(null);
+
+			else if (user) {
+				await getNearAccountByPublicKey(user.nearPublicKey)
+					.then(account_id => res.json({
+							account_id: account_id
+						})
+					)
+			}
+		});
+};
+
+async function getNearAccountByPublicKey(key: string | undefined): Promise<string> {
+	if (!key)
+		return "";
 
 	let response;
-	const connectionString = 'postgres://public_readonly:nearprotocol@104.199.89.51/mainnet_explorer';
+	const connectionString = nearConfig.PostgresConnectionLink;
+	const generatorAccount = nearConfig.GeneratorAccount;
 
 	const client = new Client({
 		connectionString,
@@ -71,31 +138,40 @@ select
     receiver_account_id 
         from  delete_key_transaction
         join receipts using(originated_from_transaction_hash)
-            where receiver_account_id != 'near'
+            where receiver_account_id != $2
 	`;
 
 	try {
 
-		response = await client.query(query, [key]);
+		response = await client.query(query, [key, generatorAccount]);
 		return response.rows[0]["receiver_account_id"];
 	} catch (error) {
 		return "";
 	}
 }
 
-function AddAffiliateSale(affiliateUserId: number){
+function AddAffiliateSale(affiliateUserId: number) {
 	return User.findByPk(affiliateUserId)
 		.then((user: User | null) => {
 			if (!!user) {
-				console.log("add totalAffiliates");
 				const affiliates = user.totalAffiliates || 0;
-				console.log(affiliates);
 				user.totalAffiliates = affiliates + 1;
 				user.save();
-
-				console.log(user.totalAffiliates);
 			}
 		})
+}
+
+async function GetNearMasterAccount() {
+	const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(nearConfig.KeyStore);
+	const near = await nearAPI.connect({
+		deps: {
+			keyStore,
+		},
+		nodeUrl: nearConfig.JsonRpc,
+		networkId: nearConfig.Network,
+	});
+
+	return await near.account(nearConfig.Account)
 }
 
 export const patch = (req: Request, res: Response, next: NextFunction) => {
@@ -140,21 +216,10 @@ export const patch = (req: Request, res: Response, next: NextFunction) => {
 									text: `Ethereum balance is too small ${result}`,
 								});
 							} else {
-								const keyStore = new nearAPI.keyStores.UnencryptedFileSystemKeyStore(nearConfig.KeyStore);
-								const near = await nearAPI.connect({
-									deps: {
-										keyStore,
-									},
-									nodeUrl: nearConfig.JsonRpc,
-									networkId: nearConfig.Network,
-								});
-
-
-								const account = await near.account(nearConfig.Account);
+								const account = await GetNearMasterAccount();
 
 								user.nearPublicKey = req.params.publicKey;
 								user.save();
-								console.log(`save 2 key ${req.params.publicKey}`);
 
 								const transferTx = await account.functionCall(
 									nearConfig.LinkDropContract,
@@ -167,7 +232,7 @@ export const patch = (req: Request, res: Response, next: NextFunction) => {
 								);
 
 								const refUserId = Number(req.params.refUserId);
-								if(refUserId){
+								if (refUserId) {
 									AddAffiliateSale(refUserId);
 									user.refUserId = refUserId;
 								}

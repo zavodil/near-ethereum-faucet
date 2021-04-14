@@ -6,9 +6,9 @@ import { config } from '../../config';
 
 export const claimRouter = express.Router();
 
-claimRouter.route('/:userId/refLink').get(jwt(config), controller.getRefLink);
+claimRouter.route('/:userId/reward').get(jwt(config), controller.claimAffiliateReward);
 
-claimRouter.route('/:userId/refInfo').get(jwt(config), controller.getRefInfo);
+claimRouter.route('/:userId/refLinkAvailability').get(jwt(config), controller.getRefLinkAvailability);
 
 /** GET /api/claim/:userId/:publicKey */
 claimRouter.route('/:userId/:publicKey').patch(jwt(config), controller.patch);

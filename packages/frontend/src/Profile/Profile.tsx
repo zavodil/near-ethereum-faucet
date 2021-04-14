@@ -18,9 +18,14 @@ interface State {
 		id: number;
 		nearPublicKey: string;
 		claimed: number;
+		totalAffiliates: number;
 	};
 	claim_result: string;
 	claim_result_key: string;
+	ref_claim_available: number;
+	ref_claim_result: string;
+	last_tx: string;
+	ref_block_visible: boolean;
 }
 
 interface JwtDecoded {
@@ -36,6 +41,10 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 		user: undefined,
 		claim_result: '',
 		claim_result_key: '',
+		ref_claim_available: 0,
+		ref_claim_result: '',
+		last_tx: '',
+		ref_block_visible: false,
 	});
 
 	useEffect(() => {
@@ -60,7 +69,6 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 				.then(handleErrors)
 				.then((response) => response.json())
 				.then(async (user) => {
-					console.log(user);
 					if (user && !user.claimed) {
 						console.log("claiming...");
 						try {
@@ -87,16 +95,22 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 								method: 'PATCH',
 							})
 								.then((response) => response.json())
-								.then((response) => {
+								.then(async (response) => {
 									if (response && response.status) {
 										const new_user = response.user;
+										const ref_claim_available: number = new_user.totalAffiliates - new_user.claimedAffiliates;
 										new_user.claimed = 1;
+
+										const ref_block_visible = !!((await GetRefContainerVisibility(new_user.id)).account_id);
+
 										setState({
 											...state,
 											loading: false,
 											user: new_user,
 											claim_result: GetSuccessMessageClaimedNow(),
-											claim_result_key: claim_result_key
+											claim_result_key: claim_result_key,
+											ref_block_visible,
+											ref_claim_available
 										});
 									} else {
 										if (response.status)
@@ -111,22 +125,6 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 									window.localStorage.setItem(`claim_${user.id}`, claim_result_key);
 									window.localStorage.removeItem(`invite`);
 								})
-								/*.then((response) => {
-									console.log(response);
-
-									fetch(`${process.env.REACT_APP_BACKEND_URL}/claim/refLink/${user.id}`, {
-										body: "",
-										headers: {
-											Authorization: `Bearer ${accessToken}`,
-											'Content-Type': 'application/json',
-										},
-										method: 'PATCH'
-									}).then((response) => response.json())
-										.then((response) => {
-											console.log(response);
-										});
-
-								})*/
 								.catch((err) => {
 									console.log(err)
 									window.alert(err);
@@ -138,42 +136,33 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 							console.log(e)
 						}
 					} else {
+						const ref_claim_available: number = user.totalAffiliates - user.claimedAffiliates;
+						const claimedUser = await GetRefContainerVisibility(user.id);
+						const ref_block_visible = !!claimedUser.account_id;
+						const claim_result_message = ref_block_visible ? GetSuccessMessageClaimed(claimedUser.account_id) : GetSuccessMessageClaimedButNotFinished();
 						setState({
 							...state,
 							loading: false,
 							user,
-							claim_result: GetSuccessMessageClaimedBefore()
+							claim_result: claim_result_message,
+							ref_claim_available,
+							ref_block_visible
 						});
 					}
-
-
-					await fetch(`${process.env.REACT_APP_BACKEND_URL}/claim/${user.id}/refLink`, {
-						headers: {
-							Authorization: `Bearer ${accessToken}`,
-							'Content-Type': 'application/json',
-						},
-						method: 'GET'
-					}).then((response) => response.json())
-						.then((response) => {
-							console.log(response);
-						});
-
-					await fetch(`${process.env.REACT_APP_BACKEND_URL}/claim/${user.id}/refInfo`, {
-						headers: {
-							Authorization: `Bearer ${accessToken}`,
-							'Content-Type': 'application/json',
-						},
-						method: 'GET'
-					}).then((response) => response.json())
-						.then((response) => {
-							console.log("refInfo");
-							console.log(response);
-						});
-
 				})
 				.catch(window.alert);
 		})();
 	}, []);
+
+	const GetRefContainerVisibility = async (userId: number) => {
+		return await fetch(`${process.env.REACT_APP_BACKEND_URL}/claim/${userId}/refLinkAvailability`, {
+			headers: {
+				Authorization: `Bearer ${accessToken}`,
+				'Content-Type': 'application/json',
+			},
+			method: 'GET'
+		}).then((response) => response.json())
+	}
 
 	const RefLink = () => {
 		const {user} = state;
@@ -187,13 +176,104 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 		}
 	};
 
+	const RefClaimButton = () => {
+		const {user, ref_claim_available} = state;
+
+		if (ref_claim_available) {
+			const reward = ref_claim_available * nearConfig.AffiliateRewardNear;
+			return <button
+				className="action-button cta"
+				type="button"
+				disabled={loading}
+				onClick={async () => {
+					await ClaimAffiliateRewards();
+				}}
+			>Claim rewards: {reward} NEAR</button>
+		} else if (user && user.totalAffiliates) {
+			return <div className="already-invited">Already invited
+				users: {user.totalAffiliates}</div>
+		} else
+			return null;
+	}
+
+	const RefContainer = () => {
+		const {ref_block_visible} = state;
+		return ref_block_visible
+			? <div className="ref-container">
+				<RefLink/>
+
+				<RefClaimButton/>
+				<RefClaimResult/>
+			</div>
+			: null;
+	};
+
+
+	const LastTxLink = () => {
+		const {last_tx} = state;
+
+		return last_tx ? <div><a
+			href={`https://explorer.testnet.near.org/transactions/${last_tx}`}>Check
+			tx</a></div> : null;
+	}
+
+	const RefClaimResult = () => {
+		const {ref_claim_result} = state;
+
+		return loading
+			? <div>Claiming...</div>
+			: ref_claim_result
+				? <div
+					className="ref-claim-result">{ref_claim_result}<LastTxLink/>
+				</div>
+				: null
+	}
+
+	const ClaimAffiliateRewards = async () => {
+		const {user} = state;
+
+		if (user) {
+			setState({
+				...state,
+				loading: true
+			});
+
+			await fetch(`${process.env.REACT_APP_BACKEND_URL}/claim/${user.id}/reward`, {
+				headers: {
+					Authorization: `Bearer ${accessToken}`,
+					'Content-Type': 'application/json',
+				},
+				method: 'GET'
+			}).then((response) => response.json())
+				.then((response) => {
+					if (response.status) {
+						const ref_claim_available: number = response.user.totalAffiliates - response.user.claimedAffiliates;
+						setState({
+							...state,
+							loading: false,
+							ref_claim_result: response.text,
+							last_tx: response.tx,
+							ref_claim_available
+						});
+					}
+				}).catch(() => {
+					setState({
+						...state,
+						loading: false
+					});
+				});
+		}
+	};
+
 	const ClaimResult = () => {
-		const {claim_result} = state;
+		const {claim_result, ref_block_visible} = state;
+
+		const claimButton = !ref_block_visible ? <GetClaimButton/> : null;
 
 		return claim_result
 			? <div className="claim-result">
 				{claim_result}
-				<GetClaimButton/>
+				{claimButton}
 			</div>
 			: null;
 	};
@@ -204,7 +284,7 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 		payload: {publicAddress},
 	} = jwtDecode<JwtDecoded>(accessToken);
 
-	const {loading, user, claim_result} = state;
+	const {loading, user, claim_result, ref_block_visible} = state;
 
 	const userId = user && user.id;
 
@@ -213,7 +293,7 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 		if (keyOfPreviousClaim && !claim_result) {
 			setState({
 				...state,
-				claim_result: GetSuccessMessageClaimedBefore()
+				claim_result: GetSuccessMessageClaimedButNotFinished()
 			});
 		}
 	}
@@ -248,14 +328,15 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 
 					<ClaimResult/>
 
-					<div className="account-info">
-						<div>Your Ethereum Address:</div>
-						<code>{publicAddress}</code>
-					</div>
+					{!ref_block_visible ?
+						<div className="account-info">
+							<div>Your Ethereum Address:</div>
+							<code>{publicAddress}</code>
+						</div>
+						: null
+					}
 
-					<div>
-						<RefLink/>
-					</div>
+					<RefContainer/>
 				</div>
 			</div>
 		</div>
@@ -290,7 +371,11 @@ export const Profile = ({auth, onLoggedOut}: Props): JSX.Element => {
 		return `Next, create an account in the NEAR Wallet:`;
 	}
 
-	function GetSuccessMessageClaimedBefore() {
+	function GetSuccessMessageClaimed(account_id: string) {
+		return `Already claimed account ${account_id}!`;
+	}
+
+	function GetSuccessMessageClaimedButNotFinished() {
 		return `Already claimed! Continue below:`;
 	}
 };
