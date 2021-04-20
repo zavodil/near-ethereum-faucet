@@ -12,9 +12,6 @@ interface State {
 }
 
 function getPreviousClaimCount() {
-	console.log(`getPreviousClaimCount ${Object.keys(window.localStorage)
-		.filter((key) => key.startsWith("claim_")).length}`);
-
 	return Object.keys(window.localStorage)
 		.filter((key) => key.startsWith("claim_")).length
 }
